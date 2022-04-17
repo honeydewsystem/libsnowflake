@@ -15,20 +15,53 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 extern "C" {
 #endif
 
-#define SNOWFLAKE_STR_LEN 40
-
+/**
+	Generates a timestamp relative to the snowflake epoch, which is
+	configured at compile time.  (By default it is the first second of 2015)
+*/
 uint_fast64_t snowflake_create_timestamp(void);
 
-uint_fast64_t snowflake_create(const uint_fast8_t worker_id, const uint_fast8_t process_id);
+/**
+	Constructs a snowflake from the given components.
 
-uint_fast64_t snowflake_extract_timestamp(const uint_fast64_t s);
-uint_fast8_t snowflake_extract_worker_id(const uint_fast64_t s);
-uint_fast8_t snowflake_extract_process_id(const uint_fast64_t s);
-uint_fast16_t snowflake_extract_increment(const uint_fast64_t s);
+	timestamp must fit within 42 bits (be less than 2^42). It is recommended
+	that you call snowflake_create_timestamp() to get a timestamp value.
 
-void snowflake_to_string(uint_fast64_t s, char* buf);
+	worker_id must be less than 32, and process_id must be less than 32.
 
-int snowflake_from_string(uint_fast64_t *s, const char* buf);
+	increment_ptr must point to an already-initialized value which is
+	less than or equal to 0xFFF. After the snowflake is generated, the
+	value will be incremented by 1. If it exceeds 0xFFF, then it will be
+	reset to 0. It may never be NULL (or nullptr).
+
+	If any of the prior preconditions are not met, then it is not
+	guaranteed that the returned snowflake is distinct from all other
+	returned snowflakes, and it is not guaranteed that the extraction
+	macros will return the correct result.
+
+	For a less verbose alternative, use
+	snowflake_create(worker_id, process_id, increment_ptr)
+	which will automatically call snowflake_create_timestamp().
+
+	Data may be extracted from a snowflake using:
+		snowflake_extract_timestamp()
+		snowflake_extract_worker_id()
+		snowflake_extract_process_id()
+		snowflake_extract_increment()
+*/
+uint_fast64_t snowflake_create_full(
+		const uint_fast16_t timestamp,
+		const uint_fast8_t worker_id,
+		const uint_fast8_t process_id,
+		uint_fast16_t* const increment_ptr);
+
+#define snowflake_create(worker_id, process_id, increment_ptr) \
+	snowflake_create_full(snowflake_create_timestamp(), worker_id, process_id, increment_ptr)
+
+#define snowflake_extract_timestamp(s)  ((s) >> 22)
+#define snowflake_extract_worker_id(s)  (((s) & 0x3E0000) >> 17)
+#define snowflake_extract_process_id(s) (((s) & 0x1F000) >> 12)
+#define snowflake_extract_increment(s)  ((s) & 0xFFF)
 
 #ifdef __cplusplus
 }
