@@ -5,7 +5,7 @@ CFLAGS_DEBUG=$(CFLAGS) -Og -g
 
 CLINKS=-lm
 
-DESTDIR=/usr/local
+PREFIX=/usr/local
 
 all: snowflake.o
 
@@ -25,13 +25,13 @@ libsnowflake.so: snowflake.c snowflake.h
 	$(CC) $(CFLAGS_FAST) $(CLINKS) -shared -o '$@' -c '$<'
 
 install: libsnowflake.so snowflake.h
-	mkdir -p "$(DESTDIR)/include" "$(DESTDIR)/lib"
-	cp snowflake.h "$(DESTDIR)/include"
-	cp libsnowflake.so "$(DESTDIR)/lib"
+	mkdir -p "$(DESTDIR)$(PREFIX)/include" "$(DESTDIR)$(PREFIX)/lib"
+	cp snowflake.h "$(DESTDIR)$(PREFIX)/include"
+	cp libsnowflake.so "$(DESTDIR)$(PREFIX)/lib"
 
 uninstall:
-	rm -f "$(DESTDIR)/include/snowflake.h"
-	rm -f "$(DESTDIR)/lib/snowflake.so"
+	rm -f "$(DESTDIR)$(PREFIX)/include/snowflake.h"
+	rm -f "$(DESTDIR)$(PREFIX)/lib/snowflake.so"
 
 test: snowflake_test
 	valgrind ./snowflake_test
