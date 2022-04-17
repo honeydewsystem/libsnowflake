@@ -31,7 +31,7 @@ install: libsnowflake.so snowflake.h
 
 uninstall:
 	rm -f "$(DESTDIR)$(PREFIX)/include/snowflake.h"
-	rm -f "$(DESTDIR)$(PREFIX)/lib/snowflake.so"
+	rm -f "$(DESTDIR)$(PREFIX)/lib/libsnowflake.so"
 
 test: snowflake_test
 	valgrind ./snowflake_test
